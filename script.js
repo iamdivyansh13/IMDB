@@ -1,16 +1,21 @@
-
 const apiKey = 'a6b908e1';
 
 function fetchMovies(searchTerm) {
     fetch(`http://www.omdbapi.com/?apikey=${apiKey}&s=${searchTerm}`)
         .then(response => response.json())
-        .then(data => displaySearchResults(data.Search))
+        .then(data => {
+            if (data.Search) {
+                displaySearchResults(data.Search);
+            } else {
+                displaySearchResults([]);
+            }
+        })
         .catch(error => console.error('Error:', error));
 }
 
 function displaySearchResults(movies) {
     const searchResults = document.getElementById('searchResults');
-    searchResults.innerHTML = '';
+    searchResults.textContent = '';
     movies.forEach(movie => {
         const movieDiv = document.createElement('div');
         movieDiv.classList.add('card', 'mb-3', 'movie');
@@ -23,7 +28,6 @@ function displaySearchResults(movies) {
           <div class="col-md-8">
             <div class="card-body">
               <h5 class="card-title">${movie.Title} (${movie.Year})</h5>
-              <p class="card-text">${movie.Plot}</p>
               <button class="btn btn-primary addToFavorites">Add to Favorites</button>
               <button class="btn btn-info viewDetails">View Details</button>
             </div>
@@ -32,6 +36,7 @@ function displaySearchResults(movies) {
       `;
         searchResults.appendChild(movieDiv);
     });
+    displayFavoriteMovies(); // Call to display favorites after search results
 }
 
 function addToFavorites(movieId) {
@@ -82,42 +87,21 @@ function removeFromFavorites(movieId) {
     displayFavoriteMovies();
 }
 
-document.getElementById('searchInput').addEventListener('input', (event) => {
-    fetchMovies(event.target.value);
-});
-
-document.getElementById('searchResults').addEventListener('click', (event) => {
-    if (event.target.classList.contains('addToFavorites')) {
-        const movieId = event.target.closest('.movie').getAttribute('data-id');
-        addToFavorites(movieId);
-    }
-});
-
-document.getElementById('favoriteMovies').addEventListener('click', (event) => {
-    if (event.target.classList.contains('removeFromFavorites')) {
-        const movieId = event.target.closest('.movie').getAttribute('data-id');
-        removeFromFavorites(movieId);
-    }
-});
-
 function displayMovieDetails(movieId) {
     const movieDiv = document.querySelector(`.movie[data-id="${movieId}"]`);
     const cardBody = movieDiv.querySelector('.card-body');
     const existingDetails = cardBody.querySelector('.movie-details');
 
     if (existingDetails) {
-        // Details already displayed, remove them
         existingDetails.remove();
     } else {
-        // Details not displayed, fetch and display them
         fetch(`http://www.omdbapi.com/?apikey=${apiKey}&i=${movieId}`)
             .then(response => response.json())
             .then(data => {
                 const detailsDiv = document.createElement('div');
                 detailsDiv.classList.add('movie-details');
                 detailsDiv.innerHTML = `
-            <h5 class="card-title">${data.Title} (${data.Year})</h5>
-            <p class="card-text">${data.Plot}</p>
+            <p class="card-text"><strong>Plot:</strong> ${data.Plot}</p>
             <p class="card-text"><strong>Director:</strong> ${data.Director}</p>
             <p class="card-text"><strong>Actors:</strong> ${data.Actors}</p>
             <p class="card-text"><strong>Genre:</strong> ${data.Genre}</p>
@@ -129,11 +113,28 @@ function displayMovieDetails(movieId) {
     }
 }
 
+document.getElementById('searchInput').addEventListener('input', (event) => {
+    fetchMovies(event.target.value);
+});
 
-document.body.addEventListener('click', event => {
-    if (event.target.classList.contains('viewDetails')) {
+document.getElementById('searchResults').addEventListener('click', (event) => {
+    if (event.target.classList.contains('addToFavorites')) {
+        const movieId = event.target.closest('.movie').getAttribute('data-id');
+        addToFavorites(movieId);
+    } else if (event.target.classList.contains('viewDetails')) {
         const movieId = event.target.closest('.movie').getAttribute('data-id');
         displayMovieDetails(movieId);
     }
 });
+
+document.getElementById('favoriteMovies').addEventListener('click', (event) => {
+    if (event.target.classList.contains('removeFromFavorites')) {
+        const movieId = event.target.closest('.movie').getAttribute('data-id');
+        removeFromFavorites(movieId);
+    } else if (event.target.classList.contains('viewDetails')) {
+        const movieId = event.target.closest('.movie').getAttribute('data-id');
+        displayMovieDetails(movieId);
+    }
+});
+
 displayFavoriteMovies();
