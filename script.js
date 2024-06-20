@@ -2,7 +2,7 @@
 const apiKey = 'a6b908e1';
 
 function fetchMovies(searchTerm) {
-    fetch(`https://cors-anywhere.herokuapp.com/http://www.omdbapi.com/?apikey=${apiKey}&s=${searchTerm}`)
+    fetch(`http://www.omdbapi.com/?apikey=${apiKey}&s=${searchTerm}`)
         .then(response => response.json())
         .then(data => displaySearchResults(data.Search))
         .catch(error => console.error('Error:', error));
@@ -48,7 +48,7 @@ function displayFavoriteMovies() {
     favoriteMovies.innerHTML = '';
     let favoriteMoviesIds = JSON.parse(localStorage.getItem('favoriteMovies')) || [];
     favoriteMoviesIds.forEach(movieId => {
-        fetch(`https://cors-anywhere.herokuapp.com/http://www.omdbapi.com/?apikey=${apiKey}&s=${searchTerm}`)
+        fetch(`http://www.omdbapi.com/?apikey=${apiKey}&i=${movieId}`)
             .then(response => response.json())
             .then(data => {
                 const movieDiv = document.createElement('div');
@@ -110,7 +110,7 @@ function displayMovieDetails(movieId) {
         existingDetails.remove();
     } else {
         // Details not displayed, fetch and display them
-        fetch(`https://cors-anywhere.herokuapp.com/http://www.omdbapi.com/?apikey=${apiKey}&s=${searchTerm}`)
+        fetch(`http://www.omdbapi.com/?apikey=${apiKey}&i=${movieId}`)
             .then(response => response.json())
             .then(data => {
                 const detailsDiv = document.createElement('div');
